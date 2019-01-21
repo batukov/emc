@@ -35,7 +35,7 @@
 #include "stm32f4xx.h"
 #include "stm32f4xx_it.h"
 #include "cmsis_os.h"
-//#include "my_class.h"
+//#include "motor.h"
 
 /* USER CODE BEGIN 0 */
 
@@ -46,6 +46,10 @@ extern DMA_HandleTypeDef hdma_adc1;
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim4;
 extern uint32_t tim4_counter;
+
+uint32_t it_current_time = 1;
+uint32_t it_last_time = 1;
+uint32_t it_awaiting_time = 0;
 
 
 /******************************************************************************/
@@ -60,12 +64,22 @@ void EXTI9_5_IRQHandler(void)
     /* USER CODE BEGIN EXTI9_5_IRQn 0 */
 
     /* USER CODE END EXTI9_5_IRQn 0 */
-    /*
-    if(da_state != NULL) {
-        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_6);
-        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_7);
-        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_11);
-    }(/
+
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_6);
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_7);
+
+    /* USER CODE BEGIN EXTI9_5_IRQn 1 */
+
+    /* USER CODE END EXTI9_5_IRQn 1 */
+}
+void EXTI15_10_IRQHandler(void)
+{
+    /* USER CODE BEGIN EXTI9_5_IRQn 0 */
+
+    /* USER CODE END EXTI9_5_IRQn 0 */
+
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_11);
+
     /* USER CODE BEGIN EXTI9_5_IRQn 1 */
 
     /* USER CODE END EXTI9_5_IRQn 1 */
@@ -209,22 +223,26 @@ void TIM1_BRK_TIM9_IRQHandler(void)
 
     /* USER CODE END TIM1_BRK_TIM9_IRQn 0 */
     HAL_TIM_IRQHandler(&htim1);
+    //HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_6);
     /* USER CODE BEGIN TIM1_BRK_TIM9_IRQn 1 */
 
     /* USER CODE END TIM1_BRK_TIM9_IRQn 1 */
 }
 
+
+void TIM1_IRQHandler(void)
+{
+    HAL_TIM_IRQHandler(&htim1);
+}
+
 void TIM4_IRQHandler(void)
 {
-    /* USER CODE BEGIN TIM4_IRQn 0 */
-
-    /* USER CODE END TIM4_IRQn 0 */
     tim4_counter++;
+    //HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_6);
     HAL_TIM_IRQHandler(&htim4);
-    /* USER CODE BEGIN TIM4_IRQn 1 */
-
-    /* USER CODE END TIM4_IRQn 1 */
+    //HAL_TIM_PeriodElapsedCallback(&htim4);
 }
+
 
 
 void DMA2_Stream0_IRQHandler(void)

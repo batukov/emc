@@ -120,6 +120,7 @@ void MX_TIM1_Init(void)
   }
 
   HAL_TIM_MspPostInit(&htim1);
+  //HAL_TIM_Base_Start_IT(&htim1);
   TIM1->CCR4 = 1; // turn on interraptors arrrrrgh
 }
 uint32_t get_time(){
@@ -131,7 +132,7 @@ void MX_TIM4_Init(void)
   TIM_MasterConfigTypeDef sMasterConfig;
 
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 60; // 62 тика на 1 цикл my_class
+  htim4.Init.Prescaler = 13724; // 62 тика на 1 цикл motor
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim4.Init.Period = 1;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;

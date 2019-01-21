@@ -43,7 +43,7 @@
 #include "stm32f4xx_hal.h"
 #include "main.h"
 
-//#include "my_class.h"
+//#include "motor.h"
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
@@ -62,6 +62,9 @@ void PendSV_Handler(void);
 void SysTick_Handler(void);
 void DMA2_Stream0_IRQHandler(void);
 void TIM1_BRK_TIM9_IRQHandler(void);
+//void TIM1_CC_TIM9_IRQHandler(void);
+void TIM1_UP_TIM9_IRQHandler(void);
+//void TIM4_IRQHandler(void);
 
 
 #ifdef __cplusplus

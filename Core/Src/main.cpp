@@ -52,15 +52,16 @@
 #include "cmsis_os.h"
 #include "can.h"
 #include "gpio.h"
-#include "my_class.h"
+#include "motor.h"
 #include "adc.h"
 #include "dma.h"
 #include "tim.h"
 
 
+
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-
+motor * motor_pointer;
 
 extern "C" int main(void)
 {
@@ -79,7 +80,8 @@ extern "C" int main(void)
 
     /* Call init function for freertos objects (in freertos.c) */
 
-    static my_class yo(10);
+    static motor yo(10);
+    motor_pointer = &yo;
 
 
     /* Start scheduler */
@@ -88,6 +90,8 @@ extern "C" int main(void)
     /* We should never get here as control is now taken by the scheduler */
 
     /* Infinite loop */
+
+
 
     while (1)
     {
