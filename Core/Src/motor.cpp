@@ -54,42 +54,81 @@ void motor::set_pwm(uint32_t pwm_value) {
 
 uint16_t get_hell_data(void);
 
+void motor::switch_mode(const int &value) {
+    this->mode = value;
+    switch (this->mode)
+    {
+        case 0:
+            TIM1->CCR1 = 0;
+            TIM1->CCR2 = 0;
+            TIM1->CCR3 = 0;
+            HAL_TIM_PWM_Stop(&htim1, TIM_CHANNEL_1);    //starts PWM on CH1 pin
+            HAL_TIM_PWM_Stop(&htim1, TIM_CHANNEL_2);    //starts PWM on CH1 pin
+            HAL_TIM_PWM_Stop(&htim1, TIM_CHANNEL_3);    //starts PWM on CH1 pin
+
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8 , GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9 , GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
+
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET);
+            break;
+        case 1:
+            HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);    //starts PWM on CH1 pin
+            HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);    //starts PWM on CH1 pin
+            HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);    //starts PWM on CH1 pin
+            break;
+        default:
+            break;
+    }
+}
 
 void motor::do_commutation(uint16_t halls_data) {
-    this->set_state(halls_data);
-    if(this->current_state.key_1_H){
-        LL_TIM_CC_EnableChannel(htim1.Instance, LL_TIM_CHANNEL_CH1);
-        HAL_GPIO_WritePin(GPIOB,GPIO_PIN_13,GPIO_PIN_RESET);
+    switch (this->mode) {
+    case 0:
+        //blablabla
+            break;
+    case 1:
+        this->set_state(halls_data);
+        if (this->current_state.key_1_H) {
+            LL_TIM_CC_EnableChannel(htim1.Instance, LL_TIM_CHANNEL_CH1);
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET);
 
-    }else{
-        LL_TIM_CC_DisableChannel(htim1.Instance, LL_TIM_CHANNEL_CH1);
-        if(this->current_state.key_1_L){
-            HAL_GPIO_WritePin(GPIOB,GPIO_PIN_13,GPIO_PIN_SET);
-        }else{
-            HAL_GPIO_WritePin(GPIOB,GPIO_PIN_13,GPIO_PIN_RESET);
+        } else {
+            LL_TIM_CC_DisableChannel(htim1.Instance, LL_TIM_CHANNEL_CH1);
+            if (this->current_state.key_1_L) {
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET);
+            } else {
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET);
+            }
         }
-    }
-    if(this->current_state.key_0_H){
-        LL_TIM_CC_EnableChannel(htim1.Instance, LL_TIM_CHANNEL_CH2);
-        HAL_GPIO_WritePin(GPIOB,GPIO_PIN_14,GPIO_PIN_RESET);
-    }else{
-        LL_TIM_CC_DisableChannel(htim1.Instance, LL_TIM_CHANNEL_CH2);
-        if(this->current_state.key_0_L){
-            HAL_GPIO_WritePin(GPIOB,GPIO_PIN_14,GPIO_PIN_SET);
-        }else{
-            HAL_GPIO_WritePin(GPIOB,GPIO_PIN_14,GPIO_PIN_RESET);
+        if (this->current_state.key_0_H) {
+            LL_TIM_CC_EnableChannel(htim1.Instance, LL_TIM_CHANNEL_CH2);
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+        } else {
+            LL_TIM_CC_DisableChannel(htim1.Instance, LL_TIM_CHANNEL_CH2);
+            if (this->current_state.key_0_L) {
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
+            } else {
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+            }
         }
-    }if(this->current_state.key_2_H){
-        LL_TIM_CC_EnableChannel(htim1.Instance, LL_TIM_CHANNEL_CH3);
-        HAL_GPIO_WritePin(GPIOB,GPIO_PIN_15,GPIO_PIN_RESET);
-    }else{
-        LL_TIM_CC_DisableChannel(htim1.Instance, LL_TIM_CHANNEL_CH3);
-        if(this->current_state.key_2_L){
-            HAL_GPIO_WritePin(GPIOB,GPIO_PIN_15,GPIO_PIN_SET);
-        }else{
-            HAL_GPIO_WritePin(GPIOB,GPIO_PIN_15,GPIO_PIN_RESET);
+        if (this->current_state.key_2_H) {
+            LL_TIM_CC_EnableChannel(htim1.Instance, LL_TIM_CHANNEL_CH3);
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET);
+        } else {
+            LL_TIM_CC_DisableChannel(htim1.Instance, LL_TIM_CHANNEL_CH3);
+            if (this->current_state.key_2_L) {
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_SET);
+            } else {
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET);
 
+            }
         }
+        break;
+     default:
+        break;
     }
 }
 

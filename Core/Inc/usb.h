@@ -7,6 +7,7 @@
 #include "usb_device.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include <motor.h>
 
 class usb {
 public:
@@ -16,6 +17,7 @@ public:
 };
 
 extern uint32_t amplitude;
+extern motor *motor_pointer;
 
 
 //extern uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];

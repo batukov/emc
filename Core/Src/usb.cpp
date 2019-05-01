@@ -65,17 +65,19 @@ void usb::read_data(uint8_t *rx_buffer, uint8_t buf_size)
 
     if(!strcmp(cmd, pwm))
     {
-        amplitude = std::max(atoi(val),255);
+        amplitude = std::min(atoi(val),255);
         return;
     }
-    if(!strcmp(cmd, "stp"))
+    if(!strcmp(cmd, stp))
     {
-        amplitude = 0;
+        motor_pointer->switch_mode(0);
+        //amplitude = 0;
         return;
     }
-    if(!strcmp(cmd, "str"))
+    if(!strcmp(cmd, str))
     {
-        amplitude = 10;
+        motor_pointer->switch_mode(1);
+        //amplitude = 10;
         return;
     }
 }
