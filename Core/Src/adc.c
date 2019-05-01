@@ -42,14 +42,17 @@
 #include "gpio.h"
 #include "dma.h"
 
-/* USER CODE BEGIN 0 */
 
-/* USER CODE END 0 */
+
+DMA_HandleTypeDef hdma_adc1;
+volatile uint16_t ADC_data[4]= {0,0,0,0}; // DMA-Buffer
+
+
 
 ADC_HandleTypeDef hadc1;
 ADC_HandleTypeDef hadc2;
-DMA_HandleTypeDef hdma_adc1;
-volatile uint16_t ADC_data[4]= {0,0,0,0}; // DMA-Buffer
+
+
 
 /* ADC1 init function */
 void MX_ADC1_Init(void)
@@ -73,7 +76,7 @@ void MX_ADC1_Init(void)
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+    Error_Handler();
   }
 
     /**Configures for the selected ADC injected channel its corresponding rank in the sequencer and its sample time
@@ -89,7 +92,7 @@ void MX_ADC1_Init(void)
     sConfigInjected.InjectedOffset = 0x000;
     if (HAL_ADCEx_InjectedConfigChannel(&hadc1, &sConfigInjected) != HAL_OK)
     {
-        _Error_Handler(__FILE__, __LINE__);
+        Error_Handler();
     }
 
     /**Configures for the selected ADC injected channel its corresponding rank in the sequencer and its sample time
@@ -98,7 +101,7 @@ void MX_ADC1_Init(void)
     sConfigInjected.InjectedRank = 2;
     if (HAL_ADCEx_InjectedConfigChannel(&hadc1, &sConfigInjected) != HAL_OK)
     {
-        _Error_Handler(__FILE__, __LINE__);
+      Error_Handler();
     }
 
     /**Configures for the selected ADC injected channel its corresponding rank in the sequencer and its sample time
@@ -107,7 +110,7 @@ void MX_ADC1_Init(void)
     sConfigInjected.InjectedRank = 3;
     if (HAL_ADCEx_InjectedConfigChannel(&hadc1, &sConfigInjected) != HAL_OK)
     {
-        _Error_Handler(__FILE__, __LINE__);
+      Error_Handler();
     }
 
     /**Configures for the selected ADC injected channel its corresponding rank in the sequencer and its sample time
@@ -116,7 +119,7 @@ void MX_ADC1_Init(void)
     sConfigInjected.InjectedRank = 4;
     if (HAL_ADCEx_InjectedConfigChannel(&hadc1, &sConfigInjected) != HAL_OK)
     {
-        _Error_Handler(__FILE__, __LINE__);
+      Error_Handler();
     }
 
 }
@@ -231,7 +234,7 @@ void MX_ADC2_Init(void)
   hadc2.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   if (HAL_ADC_Init(&hadc2) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+    Error_Handler();
   }
 
   /**Configures for the selected ADC injected channel its corresponding rank in the sequencer and its sample time
@@ -247,7 +250,7 @@ void MX_ADC2_Init(void)
   sConfigInjected.InjectedOffset = 0x000;
   if (HAL_ADCEx_InjectedConfigChannel(&hadc2, &sConfigInjected) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+    Error_Handler();
   }
 
   /**Configures for the selected ADC injected channel its corresponding rank in the sequencer and its sample time
@@ -256,7 +259,7 @@ void MX_ADC2_Init(void)
   sConfigInjected.InjectedRank = 2;
   if (HAL_ADCEx_InjectedConfigChannel(&hadc2, &sConfigInjected) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+    Error_Handler();
   }
 }
 

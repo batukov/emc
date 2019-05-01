@@ -44,21 +44,21 @@
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f4xx_hal.h"
+//#include "stm32f4xx_hal.h"
 #include "main.h"
+//#include "stm32f4xx_hal.h"
 
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
 
-extern ADC_HandleTypeDef hadc1;
-extern ADC_HandleTypeDef hadc2;
+
 
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
 
-extern void _Error_Handler(char *, int);
+extern void Error_Handler(void);
 
 extern volatile uint16_t ADC_data[4];
 
