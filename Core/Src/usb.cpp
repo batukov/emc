@@ -43,7 +43,7 @@ usb::usb(commands_buf * new_buf){
     this->cmd_buffer = new_buf;
     BaseType_t val = xTaskCreate(this->usb_task,
                                  "usb_mon",
-                                 1000,
+                                 1500,
                                  (void *) this,
                                  4,
                                  nullptr);

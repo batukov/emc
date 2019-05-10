@@ -3,10 +3,7 @@
 //
 
 #include <stm32f405xx.h>
-//#include "stm32f4xx_hal.h"
-//#include <stm32f4xx_hal_tim.h>
 #include <stm32f4xx_ll_tim.h>
-//#include <stm32f4xx_hal_tim.h>
 #include "main.h"
 #include "adc.h"
 #include "motor.h"
@@ -15,7 +12,6 @@
 #include "math.h"
 #include "vector"
 #include "algorithm"
-//#include <stm32f4xx_hal_tim_ex.h>
 
 
 #define pi 3.1415926535F
@@ -30,17 +26,18 @@ uint32_t old_time;
 uint32_t new_time;
 
 
-volatile uint32_t amplitude = 15;//30;
+//volatile uint32_t amplitude = 15;//30;
 volatile uint32_t max_amp = 100;
 
 
 
 motor::motor(commands_buf * new_buf){
+    this->amplitude = 10;
     this->cmd_buffer = new_buf;
     this->current_state = State(0);
     BaseType_t val = xTaskCreate(this->motor_task,
                                  "ya_mon",
-                                 1000,
+                                 1500,
                                  (void *) this,
                                  4,
                                  nullptr);
@@ -48,9 +45,10 @@ motor::motor(commands_buf * new_buf){
 }
 
 void motor::set_pwm(uint32_t pwm_value) {
-    TIM1->CCR1 = pwm_value; // устанавливаем значение шим
-    TIM1->CCR2 = pwm_value;
-    TIM1->CCR3 = pwm_value;
+    this->amplitude = pwm_value;
+    TIM1->CCR1 = this->amplitude; // устанавливаем значение шим
+    TIM1->CCR2 = this->amplitude;
+    TIM1->CCR3 = this->amplitude;
 }
 
 uint16_t get_hell_data(void);
@@ -103,8 +101,9 @@ void motor::do_commutation(uint16_t halls_data) {
         this->set_state(halls_data); // устанавливаем состояние системы в соответствие с датчиками холла
 
         if (this->current_state.key_1_H) { // если верхний ключ 1
-            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET); // нижний ключ закрываем
             LL_TIM_CC_EnableChannel(htim1.Instance, LL_TIM_CHANNEL_CH1); // включаем шим на верхнем
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET); // нижний ключ закрываем (есть идея закрывать до отключения шим, надо обдумать)
+
         } else { // если верхний ключ 0
             LL_TIM_CC_DisableChannel(htim1.Instance, LL_TIM_CHANNEL_CH1); // выключаем шим на верхнем ключе
             if (this->current_state.key_1_L) { // если нижний ключ 1
@@ -114,8 +113,9 @@ void motor::do_commutation(uint16_t halls_data) {
             }
         } // и так далее
         if (this->current_state.key_0_H) {
-            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+
             LL_TIM_CC_EnableChannel(htim1.Instance, LL_TIM_CHANNEL_CH2);
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
         } else {
             LL_TIM_CC_DisableChannel(htim1.Instance, LL_TIM_CHANNEL_CH2);
             if (this->current_state.key_0_L) {
@@ -125,8 +125,8 @@ void motor::do_commutation(uint16_t halls_data) {
             }
         }
         if (this->current_state.key_2_H) {
-            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET);
             LL_TIM_CC_EnableChannel(htim1.Instance, LL_TIM_CHANNEL_CH3);
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET);
         } else {
             LL_TIM_CC_DisableChannel(htim1.Instance, LL_TIM_CHANNEL_CH3);
             if (this->current_state.key_2_L) {
@@ -175,7 +175,7 @@ void motor::motor_task(void *pvParameters){
         //adc[0] = ADC2->JDR1;
         //adc[1] = ADC2->JDR2;
         //ADC2->CR2 |= ADC_CR2_JSWSTART;
-        obj->set_pwm(amplitude); // устанавливаем значение шим
+        //obj->set_pwm(amplitude); // устанавливаем значение шим
         obj->process_last_msg(); // обрабатываем последнюю сообщеньку
         //vTaskDelay(500);
     }
@@ -200,10 +200,12 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 int motor::process_last_msg() {
     char buffer_to_process[30] = {0}; // создаем буфер для сообщеня
     int value_to_process = 0; // создаем буфер для значеня в сообщени
+    int tmp_value = 0;
     if(!this->cmd_buffer->get_last_incoming_cmd(buffer_to_process, value_to_process)) // если есть какой-нить сообщеня
     {
         if(!strcmp("stop",buffer_to_process)){ // если сообщеня стоп и тд
             // а здесь всякие методцы для обработки, мон
+            this->switch_mode(0); // выключаем все дела
             return 0;
         }
         if(!strcmp("starter_par",buffer_to_process)){
@@ -216,6 +218,7 @@ int motor::process_last_msg() {
             return 0;
         }
         if(!strcmp("starter_run",buffer_to_process)){
+            this->switch_mode(1); // включаем режим стартера
             return 0;
         }
         if(!strcmp("starter_forvard",buffer_to_process)){
@@ -225,6 +228,7 @@ int motor::process_last_msg() {
             return 0;
         }
         if(!strcmp("starter_pwm",buffer_to_process)){
+            this->set_pwm(std::min(255, std::max(0, value_to_process))); // устанавливаем значение переменной в диапазаоне от 0 до 255 (если вылазит - то граничное значение)
             return 0;
         }
         if(!strcmp("generator_par",buffer_to_process)){
@@ -273,6 +277,9 @@ int motor::process_last_msg() {
             return 0;
         }
         if(!strcmp("telem",buffer_to_process)){
+            return 0;
+        }
+        if(!strcmp("gief_states",buffer_to_process)){
             return 0;
         }
         this->cmd_buffer->del_last_msg(); // если сообщеня есть а смысла нет - удаляем его

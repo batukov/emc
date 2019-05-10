@@ -94,9 +94,10 @@ public:
     void do_commutation(uint16_t halls_data);
     void set_pwm(uint32_t pwm_value);
     State current_state = State(0);
-    int mode = 1;
+    int mode = 0;
     void switch_mode(const int &value);
     int process_last_msg();
+    uint32_t amplitude;
 
 };
 void action();
