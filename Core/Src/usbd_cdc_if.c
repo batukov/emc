@@ -69,6 +69,8 @@ uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 
 /** Data to send over USB CDC are stored in this buffer   */
 uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
+
+uint8_t got_msg = 0;
 //#define APP_RX_DATA_SIZE  128
 //#define APP_TX_DATA_SIZE  128
 /* USER CODE END PRIVATE_DEFINES */
@@ -262,14 +264,17 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
   * @param  Len: Number of data received (in bytes)
   * @retval Result of the operation: USBD_OK if all operations are OK else USBD_FAIL
   */
-uint8_t rx_stuff[10];
+uint8_t rx_stuff[30];
 static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
   //USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
-  strncpy(rx_stuff,(uint8_t*)Buf,*Len);
-  rx_stuff[*Len]=0;
+  memset(rx_stuff, 0, sizeof(rx_stuff));  // зануляю массив
+  strncpy(rx_stuff,(uint8_t*)Buf,*Len); //копирую из буфера usb в свой буфер обмена строку
+  //if(strchr(rx_stuff, 0x20)) {rx_stuff[*Len]= ' ';} // если найден пробел в
+  if(*Len > 3) {rx_stuff[*Len]= ' ';} // если длина сообщеня больше 3 - то добавляю пробел в конце
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
+  got_msg = 1; // обозначаю, что есть сообщенька для чтения
   //usb_pointer->read_data(&UserRxBufferFS, APP_RX_DATA_SIZE);
   return (USBD_OK);
   /* USER CODE END 6 */

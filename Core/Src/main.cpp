@@ -58,7 +58,7 @@
 #include "dma.h"
 #include "tim.h"
 //#include "usb_device.h"
-#include "usb.h"
+//#include "usb.h"
 
 
 /* Private function prototypes -----------------------------------------------*/
@@ -87,8 +87,9 @@ extern "C" int main(void)
 
     /* Call init function for freertos objects (in freertos.c) */
 
-    static motor motor_obj(10);
-    static usb usb_obj(10);
+    static commands_buf new_buffer;
+    static motor motor_obj(&new_buffer);
+    static usb usb_obj(&new_buffer);
     motor_pointer = &motor_obj;
     usb_pointer = &usb_obj;
 
@@ -114,7 +115,7 @@ extern "C" int main(void)
   */
 void SystemClock_Config(void)
 {
- RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
   /** Configure the main internal regulator output voltage 

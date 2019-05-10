@@ -9,6 +9,7 @@
 //#include "stm32f4xx_hal.h"
 //#include "stm32f4xx_hal_tim.h"
 #include <string.h>
+#include <usb.h>
 
 extern ADC_HandleTypeDef hadc1;
 extern ADC_HandleTypeDef hadc2;
@@ -85,8 +86,9 @@ struct State{
 
 
 class motor {
+    commands_buf *cmd_buffer;
 public:
-    motor(int time);
+    motor(commands_buf * new_buf);
     static void motor_task(void *pvParameters);
     uint16_t set_state(uint16_t new_state);
     void do_commutation(uint16_t halls_data);
@@ -94,6 +96,7 @@ public:
     State current_state = State(0);
     int mode = 1;
     void switch_mode(const int &value);
+    int process_last_msg();
 
 };
 void action();

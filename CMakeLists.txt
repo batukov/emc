@@ -4,7 +4,7 @@ SET(CMAKE_SYSTEM_VERSION 1)
 cmake_minimum_required(VERSION 3.7)
 
 # specify the cross compiler
-SET(TOOLCHAIN_PATH /opt/arm/gcc-arm-none-eabi-7-2018-q2-update/bin)
+SET(TOOLCHAIN_PATH /opt/arm/gcc-arm-none-eabi-8-2018-q4-major/bin)
 SET(CMAKE_C_COMPILER_WORKS 1)
 SET(CMAKE_CXX_COMPILER_WORKS 1)
 SET(CMAKE_C_COMPILER ${TOOLCHAIN_PATH}/arm-none-eabi-gcc)
