@@ -97,6 +97,7 @@ public:
     int mode = 0;
     void switch_mode(const int &value);
     int process_last_msg();
+    void form_string_to_send();
     uint32_t amplitude;
 
 };

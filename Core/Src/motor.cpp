@@ -206,6 +206,7 @@ int motor::process_last_msg() {
         if(!strcmp("stop",buffer_to_process)){ // если сообщеня стоп и тд
             // а здесь всякие методцы для обработки, мон
             this->switch_mode(0); // выключаем все дела
+            this->cmd_buffer->add_outcoming_cmd("stopped", 30);
             return 0;
         }
         if(!strcmp("starter_par",buffer_to_process)){
@@ -219,6 +220,7 @@ int motor::process_last_msg() {
         }
         if(!strcmp("starter_run",buffer_to_process)){
             this->switch_mode(1); // включаем режим стартера
+            this->cmd_buffer->add_outcoming_cmd("started", 30);
             return 0;
         }
         if(!strcmp("starter_forvard",buffer_to_process)){
@@ -229,6 +231,7 @@ int motor::process_last_msg() {
         }
         if(!strcmp("starter_pwm",buffer_to_process)){
             this->set_pwm(std::min(255, std::max(0, value_to_process))); // устанавливаем значение переменной в диапазаоне от 0 до 255 (если вылазит - то граничное значение)
+            this->cmd_buffer->add_outcoming_cmd("pwm changed", 30);
             return 0;
         }
         if(!strcmp("generator_par",buffer_to_process)){

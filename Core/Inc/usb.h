@@ -25,7 +25,7 @@ public:
     int add_incoming_cmd(char *cmd, int new_value);
     int get_last_incoming_cmd(char (&cmd_buffer)[30], int &o_value); //void f(int (&arr)[123]) {}
 
-    int add_outcoming_cmd(char *cmd, int new_value);
+    int add_outcoming_cmd(const char *cmd, const int new_value);
     int get_last_outcoming_cmd(char (&cmd_buffer)[30], int &o_value);
 
     int del_last_msg();
@@ -37,6 +37,7 @@ public:
     usb(commands_buf * new_buf);
     static void usb_task(void *pvParameters);
     void read_data(uint8_t *rx_buffer);
+    void send_data(char *cmd, int new_value);
     uint8_t cut_the_string(char *string_to_cut, char *result_buffer);
     void split_to_words(const char *string_to_parse, uint8_t string_size);
 };
