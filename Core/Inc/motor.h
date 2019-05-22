@@ -100,6 +100,11 @@ public:
     void form_string_to_send();
     uint32_t amplitude;
 
+    uint32_t current_1 = 0;
+    uint32_t current_2 = 0;
+
+    void set_currents(const uint32_t &new_cur_1, const uint32_t &new_cur_2);
+
 };
 void action();
 #endif MOTOR_H

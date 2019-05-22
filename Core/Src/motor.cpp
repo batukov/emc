@@ -43,6 +43,11 @@ motor::motor(commands_buf * new_buf){
                                  nullptr);
     int hh = 0;
 }
+void motor::set_currents(const uint32_t &new_cur_1, const uint32_t &new_cur_2) {
+    this->current_1 = new_cur_1;
+    this->current_2 = new_cur_2;
+}
+
 
 void motor::set_pwm(uint32_t pwm_value) {
     this->amplitude = pwm_value;
@@ -160,6 +165,7 @@ void motor::motor_task(void *pvParameters){
     HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
 
     MX_TIM4_Init(); // запускаем 4 таймер, который отвечает за коммутацию обмоток
+    //MX_ADC2_Init();
 
     uint32_t  adc[2] = {0};
     uint32_t adc_v[4] = {0};
@@ -172,9 +178,10 @@ void motor::motor_task(void *pvParameters){
         //adc_v[3] = ADC1->JDR1;//1
         //ADC1->CR2 |= ADC_CR2_JSWSTART;
 
-        //adc[0] = ADC2->JDR1;
-        //adc[1] = ADC2->JDR2;
-        //ADC2->CR2 |= ADC_CR2_JSWSTART;
+        adc[0] = ADC2->JDR1;
+        adc[1] = ADC2->JDR2;
+        obj->set_currents(adc[0], adc[1]);
+        ADC2->CR2 |= ADC_CR2_JSWSTART;
         //obj->set_pwm(amplitude); // устанавливаем значение шим
         obj->process_last_msg(); // обрабатываем последнюю сообщеньку
         //vTaskDelay(500);
@@ -206,7 +213,7 @@ int motor::process_last_msg() {
         if(!strcmp("stop",buffer_to_process)){ // если сообщеня стоп и тд
             // а здесь всякие методцы для обработки, мон
             this->switch_mode(0); // выключаем все дела
-            this->cmd_buffer->add_outcoming_cmd("stopped", 30);
+            this->cmd_buffer->add_outcoming_cmd("stopped\n", 30);
             return 0;
         }
         if(!strcmp("starter_par",buffer_to_process)){
@@ -220,7 +227,7 @@ int motor::process_last_msg() {
         }
         if(!strcmp("starter_run",buffer_to_process)){
             this->switch_mode(1); // включаем режим стартера
-            this->cmd_buffer->add_outcoming_cmd("started", 30);
+            this->cmd_buffer->add_outcoming_cmd("started\n", 30);
             return 0;
         }
         if(!strcmp("starter_forvard",buffer_to_process)){
@@ -231,7 +238,7 @@ int motor::process_last_msg() {
         }
         if(!strcmp("starter_pwm",buffer_to_process)){
             this->set_pwm(std::min(255, std::max(0, value_to_process))); // устанавливаем значение переменной в диапазаоне от 0 до 255 (если вылазит - то граничное значение)
-            this->cmd_buffer->add_outcoming_cmd("pwm changed", 30);
+            this->cmd_buffer->add_outcoming_cmd("pwm changed\n", 30);
             return 0;
         }
         if(!strcmp("generator_par",buffer_to_process)){
@@ -280,6 +287,13 @@ int motor::process_last_msg() {
             return 0;
         }
         if(!strcmp("telem",buffer_to_process)){
+            char res_1[9];
+            itoa (this->current_1, res_1, 10);
+            strcat(res_1," ");
+            char res_2[4];
+            itoa (this->current_2, res_2, 10);
+            strcat(res_1,res_2);
+            this->cmd_buffer->add_outcoming_cmd(res_1, 30);
             return 0;
         }
         if(!strcmp("gief_states",buffer_to_process)){
