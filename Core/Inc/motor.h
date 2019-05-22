@@ -103,7 +103,12 @@ public:
     uint32_t current_1 = 0;
     uint32_t current_2 = 0;
 
+    uint32_t voltage_1 = 0;
+    uint32_t voltage_2 = 0;
+    uint32_t voltage_3 = 0;
+
     void set_currents(const uint32_t &new_cur_1, const uint32_t &new_cur_2);
+    void set_voltages(const uint32_t &new_vol_1, const uint32_t &new_vol_2, const uint32_t &new_vol_3);
 
 };
 void action();

@@ -47,6 +47,11 @@ void motor::set_currents(const uint32_t &new_cur_1, const uint32_t &new_cur_2) {
     this->current_1 = new_cur_1;
     this->current_2 = new_cur_2;
 }
+void motor::set_voltages(const uint32_t &new_vol_1, const uint32_t &new_vol_2, const uint32_t &new_vol_3) {
+    this->voltage_1 = new_vol_1;
+    this->voltage_2 = new_vol_2;
+    this->voltage_3 = new_vol_3;
+}
 
 
 void motor::set_pwm(uint32_t pwm_value) {
@@ -165,18 +170,20 @@ void motor::motor_task(void *pvParameters){
     HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
 
     MX_TIM4_Init(); // запускаем 4 таймер, который отвечает за коммутацию обмоток
-    //MX_ADC2_Init();
+    MX_ADC1_Init();
+    MX_ADC2_Init();
 
     uint32_t  adc[2] = {0};
     uint32_t adc_v[4] = {0};
 
     while(1)
     {
-        //adc_v[0] = ADC1->JDR4;
-        //adc_v[1] = ADC1->JDR3;//3
-        //adc_v[2] = ADC1->JDR2;//2
-        //adc_v[3] = ADC1->JDR1;//1
-        //ADC1->CR2 |= ADC_CR2_JSWSTART;
+        adc_v[0] = ADC1->JDR4;
+        adc_v[1] = ADC1->JDR3;//3
+        adc_v[2] = ADC1->JDR2;//2
+        adc_v[3] = ADC1->JDR1;//1
+        obj->set_voltages(adc_v[0], adc_v[1], adc_v[2]);
+        ADC1->CR2 |= ADC_CR2_JSWSTART;
 
         adc[0] = ADC2->JDR1;
         adc[1] = ADC2->JDR2;
@@ -287,12 +294,27 @@ int motor::process_last_msg() {
             return 0;
         }
         if(!strcmp("telem",buffer_to_process)){
-            char res_1[9];
+            char res_1[24];
             itoa (this->current_1, res_1, 10);
             strcat(res_1," ");
             char res_2[4];
             itoa (this->current_2, res_2, 10);
             strcat(res_1,res_2);
+            strcat(res_1," ");
+
+            char res_3[4];
+            itoa (this->voltage_1, res_3, 10);
+            strcat(res_1,res_3);
+            strcat(res_1," ");
+            char res_4[4];
+            itoa (this->voltage_2, res_4, 10);
+            strcat(res_1,res_4);
+            strcat(res_1," ");
+            char res_5[4];
+            itoa (this->voltage_3, res_5, 10);
+            strcat(res_1,res_5);
+            strcat(res_1," ");
+
             this->cmd_buffer->add_outcoming_cmd(res_1, 30);
             return 0;
         }
