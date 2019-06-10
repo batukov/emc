@@ -37,7 +37,7 @@ motor::motor(commands_buf * new_buf){
     this->current_state = State(0);
     BaseType_t val = xTaskCreate(this->motor_task,
                                  "ya_mon",
-                                 1500,
+                                 2000,
                                  (void *) this,
                                  4,
                                  nullptr);
@@ -107,7 +107,8 @@ void motor::do_commutation(uint16_t halls_data) {
     // если верхний ключ 0, а нижний 0 - значит верхний ключ закрыт, шим остановлен, и нижний ключ закрыт
     // если верхний ключ 1, а нижний 1 - а такого не должно быть, все сломается, сгорит, взорвется, палево
 
-        if(halls_data == 7) {break;} // если все датчики холла 1 - значит что-то пошло не так, ничего не делаем
+        //if(halls_data == 7) {break;} // если все датчики холла 1 - значит что-то пошло не так, ничего не делаем
+        halls_data = 4; ///TMP
         this->set_state(halls_data); // устанавливаем состояние системы в соответствие с датчиками холла
 
         if (this->current_state.key_1_H) { // если верхний ключ 1
@@ -294,28 +295,59 @@ int motor::process_last_msg() {
             return 0;
         }
         if(!strcmp("telem",buffer_to_process)){
-            char res_1[24];
+            char res_1[30] = {'0'};
             itoa (this->current_1, res_1, 10);
             strcat(res_1," ");
-            char res_2[4];
+            char res_2[5] = {'0'};
             itoa (this->current_2, res_2, 10);
             strcat(res_1,res_2);
             strcat(res_1," ");
 
-            char res_3[4];
+            char res_3[5] = {'0'};
             itoa (this->voltage_1, res_3, 10);
             strcat(res_1,res_3);
             strcat(res_1," ");
-            char res_4[4];
+            char res_4[5] = {'0'};
             itoa (this->voltage_2, res_4, 10);
             strcat(res_1,res_4);
             strcat(res_1," ");
-            char res_5[4];
+            char res_5[5] = {'0'};
             itoa (this->voltage_3, res_5, 10);
             strcat(res_1,res_5);
             strcat(res_1," ");
 
             this->cmd_buffer->add_outcoming_cmd(res_1, 30);
+            return 0;
+        }
+        if(!strcmp("telem_r",buffer_to_process)){
+            char res_1[30] = {'0'};
+            itoa (this->current_1, res_1, 10);
+            strcat(res_1," ");
+            char res_2[5] = {'0'};
+            itoa (this->current_2, res_2, 10);
+            strcat(res_1,res_2);
+            strcat(res_1," ");
+
+            char res_3[5] = {'0'};
+            itoa (this->voltage_1, res_3, 10);
+            strcat(res_1,res_3);
+            strcat(res_1," ");
+            char res_4[5] = {'0'};
+            itoa (this->voltage_2, res_4, 10);
+            strcat(res_1,res_4);
+            strcat(res_1," ");
+            char res_5[5] = {'0'};
+            itoa (this->voltage_3, res_5, 10);
+            strcat(res_1,res_5);
+            strcat(res_1," ");
+
+            this->cmd_buffer->add_outcoming_cmd(res_1, 30);
+            vTaskDelay(100);
+            if(value_to_process > 0)
+            {
+                value_to_process--;
+                this->cmd_buffer->add_incoming_cmd("telem_r",value_to_process);
+            }
             return 0;
         }
         if(!strcmp("gief_states",buffer_to_process)){
