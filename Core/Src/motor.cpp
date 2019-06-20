@@ -16,6 +16,7 @@
 
 #define pi 3.1415926535F
 extern volatile uint16_t ADC_data[4];
+extern volatile uint16_t adc_data[40];
 
 extern uint32_t tim4_counter;
 extern TIM_HandleTypeDef htim1;
@@ -171,25 +172,31 @@ void motor::motor_task(void *pvParameters){
     HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
 
     MX_TIM4_Init(); // запускаем 4 таймер, который отвечает за коммутацию обмоток
+    MX_DMA_Init();
     MX_ADC1_Init();
-    MX_ADC2_Init();
+    for(int i=0; i< 40; i++)
+    {
+        adc_data[i] = 0xFFFF;
+    }
+    HAL_StatusTypeDef status = HAL_ADC_Start_DMA(&hadc1, (uint32_t *)&adc_data, 40); //(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
+
 
     uint32_t  adc[2] = {0};
     uint32_t adc_v[4] = {0};
 
     while(1)
     {
-        adc_v[0] = ADC1->JDR4;
-        adc_v[1] = ADC1->JDR3;//3
-        adc_v[2] = ADC1->JDR2;//2
-        adc_v[3] = ADC1->JDR1;//1
-        obj->set_voltages(adc_v[0], adc_v[1], adc_v[2]);
-        ADC1->CR2 |= ADC_CR2_JSWSTART;
+        //adc_v[0] = ADC1->JDR4;
+        //adc_v[1] = ADC1->JDR3;//3
+        //adc_v[2] = ADC1->JDR2;//2
+        //adc_v[3] = ADC1->JDR1;//1
+        //obj->set_voltages(adc_v[0], adc_v[1], adc_v[2]);
+        //ADC1->CR2 |= ADC_CR2_JSWSTART;
 
-        adc[0] = ADC2->JDR1;
-        adc[1] = ADC2->JDR2;
-        obj->set_currents(adc[0], adc[1]);
-        ADC2->CR2 |= ADC_CR2_JSWSTART;
+        //adc[0] = ADC2->JDR1;
+        //adc[1] = ADC2->JDR2;
+        //obj->set_currents(adc[0], adc[1]);
+        //ADC2->CR2 |= ADC_CR2_JSWSTART;
         //obj->set_pwm(amplitude); // устанавливаем значение шим
         obj->process_last_msg(); // обрабатываем последнюю сообщеньку
         //vTaskDelay(500);

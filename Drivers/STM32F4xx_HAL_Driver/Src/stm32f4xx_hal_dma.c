@@ -477,7 +477,8 @@ HAL_StatusTypeDef HAL_DMA_Start_IT(DMA_HandleTypeDef *hdma, uint32_t SrcAddress,
     regs->IFCR = 0x3FU << hdma->StreamIndex;
     
     /* Enable Common interrupts*/
-    hdma->Instance->CR  |= DMA_IT_TC | DMA_IT_TE | DMA_IT_DME;
+    //hdma->Instance->CR  |= DMA_IT_TC | DMA_IT_TE | DMA_IT_DME;
+    hdma->Instance->CR  |= DMA_IT_TC | DMA_IT_HT;
     hdma->Instance->FCR |= DMA_IT_FE;
     
     if(hdma->XferHalfCpltCallback != NULL)

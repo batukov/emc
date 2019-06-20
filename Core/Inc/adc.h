@@ -61,9 +61,11 @@
 extern void Error_Handler(void);
 
 extern volatile uint16_t ADC_data[4];
+extern volatile uint16_t adc_data[40];
 
 void MX_ADC1_Init(void);
 void MX_ADC2_Init(void);
+void MX_DMA_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 

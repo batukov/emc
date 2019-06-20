@@ -1216,7 +1216,7 @@ __weak void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
   * @brief  Regular conversion half DMA transfer callback in non blocking mode 
   * @param  hadc pointer to a ADC_HandleTypeDef structure that contains
   *         the configuration information for the specified ADC.
-  * @retval None
+  * @retval NoneHAL_ADC_ErrorCallback
   */
 __weak void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
 {
