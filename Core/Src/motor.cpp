@@ -16,7 +16,7 @@
 
 #define pi 3.1415926535F
 extern volatile uint16_t ADC_data[4];
-extern volatile uint16_t adc_data[40];
+extern volatile uint32_t adc_data[48];
 
 extern uint32_t tim4_counter;
 extern TIM_HandleTypeDef htim1;
@@ -178,11 +178,11 @@ void motor::motor_task(void *pvParameters){
     {
         adc_data[i] = 0xFFFF;
     }
-    HAL_StatusTypeDef status = HAL_ADC_Start_DMA(&hadc1, (uint32_t *)&adc_data, 40); //(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
+    HAL_StatusTypeDef status = HAL_ADC_Start_DMA(&hadc1, (uint32_t *)&adc_data, 48); //(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
 
 
-    uint32_t  adc[2] = {0};
-    uint32_t adc_v[4] = {0};
+    //uint32_t  adc[2] = {0};
+    //uint32_t adc_v[4] = {0};
 
     while(1)
     {
@@ -301,25 +301,29 @@ int motor::process_last_msg() {
         if(!strcmp("save",buffer_to_process)){
             return 0;
         }
+        if(!strcmp("hello",buffer_to_process)){
+            this->cmd_buffer->add_outcoming_cmd("hello", 30);
+            return 0;
+        }
         if(!strcmp("telem",buffer_to_process)){
             char res_1[30] = {'0'};
-            itoa (this->current_1, res_1, 10);
+            itoa (avrg_c_1, res_1, 10);
             strcat(res_1," ");
             char res_2[5] = {'0'};
-            itoa (this->current_2, res_2, 10);
+            itoa (avrg_c_2, res_2, 10);
             strcat(res_1,res_2);
             strcat(res_1," ");
 
             char res_3[5] = {'0'};
-            itoa (this->voltage_1, res_3, 10);
+            itoa (avrg_v_1, res_3, 10);
             strcat(res_1,res_3);
             strcat(res_1," ");
             char res_4[5] = {'0'};
-            itoa (this->voltage_2, res_4, 10);
+            itoa (avrg_v_2, res_4, 10);
             strcat(res_1,res_4);
             strcat(res_1," ");
             char res_5[5] = {'0'};
-            itoa (this->voltage_3, res_5, 10);
+            itoa (avrg_v_3, res_5, 10);
             strcat(res_1,res_5);
             strcat(res_1," ");
 
@@ -328,23 +332,23 @@ int motor::process_last_msg() {
         }
         if(!strcmp("telem_r",buffer_to_process)){
             char res_1[30] = {'0'};
-            itoa (this->current_1, res_1, 10);
+            itoa (avrg_c_1, res_1, 10);
             strcat(res_1," ");
             char res_2[5] = {'0'};
-            itoa (this->current_2, res_2, 10);
+            itoa (avrg_c_2, res_2, 10);
             strcat(res_1,res_2);
             strcat(res_1," ");
 
             char res_3[5] = {'0'};
-            itoa (this->voltage_1, res_3, 10);
+            itoa (avrg_v_1, res_3, 10);
             strcat(res_1,res_3);
             strcat(res_1," ");
             char res_4[5] = {'0'};
-            itoa (this->voltage_2, res_4, 10);
+            itoa (avrg_v_2, res_4, 10);
             strcat(res_1,res_4);
             strcat(res_1," ");
             char res_5[5] = {'0'};
-            itoa (this->voltage_3, res_5, 10);
+            itoa (avrg_v_3, res_5, 10);
             strcat(res_1,res_5);
             strcat(res_1," ");
 

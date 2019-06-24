@@ -44,26 +44,17 @@
 
 
 DMA_HandleTypeDef hdma_adc1;
-volatile uint16_t ADC_data[4]= {0,0,0,0}; // DMA-Buffer
-volatile uint16_t adc_data[40]; //struct with uint16_t units??
-
-uint16_t avrg_v_1_1 = 0;
-uint16_t avrg_v_2_1 = 0;
-uint16_t avrg_v_3_1 = 0;
-uint16_t avrg_c_1_1 = 0;
-uint16_t avrg_c_2_1 = 0;
-
-uint16_t avrg_v_1_2 = 0;
-uint16_t avrg_v_2_2 = 0;
-uint16_t avrg_v_3_2 = 0;
-uint16_t avrg_c_1_2 = 0;
-uint16_t avrg_c_2_2 = 0;
-
+//volatile uint16_t ADC_data[4]= {0,0,0,0}; // DMA-Buffer
+volatile uint32_t adc_data[48] = {0}; //struct with uint16_t units??
 
 
 
 ADC_HandleTypeDef hadc1;
-
+uint16_t avrg_v_1 = 0;
+uint16_t avrg_v_2 = 0;
+uint16_t avrg_v_3 = 0;
+uint16_t avrg_c_1 = 0;
+uint16_t avrg_c_2 = 0;
 
 
 /* ADC1 init function */
@@ -81,6 +72,7 @@ void MX_ADC1_Init(void)
   hadc1.Init.ContinuousConvMode = ENABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
+  //hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_FALLING;
   hadc1.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T1_CC1;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.NbrOfConversion = 6;
@@ -105,12 +97,14 @@ void MX_ADC1_Init(void)
   {
       Error_Handler();
   }
+
   sConfig.Channel = ADC_CHANNEL_2;
   sConfig.Rank = 3;
   if(HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
       Error_Handler();
   }
+
   sConfig.Channel = ADC_CHANNEL_3;
   sConfig.Rank = 4;
   if(HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
@@ -154,8 +148,8 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
-    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    //GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    //GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
     HAL_DMA_Init(adcHandle->DMA_Handle);
 
@@ -166,8 +160,8 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
     hdma_adc1.Init.Direction = DMA_PERIPH_TO_MEMORY;
     hdma_adc1.Init.PeriphInc = DMA_PINC_DISABLE;
     hdma_adc1.Init.MemInc = DMA_MINC_ENABLE;
-    hdma_adc1.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
-    hdma_adc1.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
+    hdma_adc1.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;//DMA_PDATAALIGN_HALFWORD;
+    hdma_adc1.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;//DMA_MDATAALIGN_HALFWORD;
     hdma_adc1.Init.Mode = DMA_CIRCULAR;
     hdma_adc1.Init.Priority = DMA_PRIORITY_VERY_HIGH;
     hdma_adc1.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
@@ -233,11 +227,12 @@ void MX_DMA_Init(void)
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *AdcHandle)
 {
-    avrg_v_1_2 = (adc_data[20] + adc_data[25] + adc_data[30] + adc_data[35]) >> 2;
-    avrg_v_2_2 = (adc_data[21] + adc_data[26] + adc_data[31] + adc_data[36]) >> 2;
-    avrg_v_3_2 = (adc_data[22] + adc_data[27] + adc_data[32] + adc_data[37]) >> 2;
-    avrg_c_1_2 = (adc_data[23] + adc_data[28] + adc_data[33] + adc_data[38]) >> 2;
-    avrg_c_2_2 = (adc_data[24] + adc_data[29] + adc_data[34] + adc_data[39]) >> 2;
+    avrg_v_1 = (adc_data[25] + adc_data[31] + adc_data[37] + adc_data[43]) >> 2;
+    avrg_v_2 = (adc_data[26] + adc_data[32] + adc_data[38] + adc_data[44]) >> 2;
+    avrg_v_3 = (adc_data[27] + adc_data[33] + adc_data[39] + adc_data[45]) >> 2;
+    avrg_c_1 = (adc_data[28] + adc_data[34] + adc_data[40] + adc_data[46]) >> 2;
+    avrg_c_2 = (adc_data[29] + adc_data[35] + adc_data[41] + adc_data[47]) >> 2;
+    int hh= 0;
 
 /*    uint32_t avg_index;
     uint32_t ch_index;
@@ -264,11 +259,11 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *AdcHandle)
   */
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
 {
-    avrg_v_1_1 = (adc_data[0] + adc_data[5] + adc_data[10] + adc_data[15]) >> 2;
-    avrg_v_2_1 = (adc_data[1] + adc_data[6] + adc_data[11] + adc_data[16]) >> 2;
-    avrg_v_3_1 = (adc_data[2] + adc_data[7] + adc_data[12] + adc_data[17]) >> 2;
-    avrg_c_1_1 = (adc_data[3] + adc_data[8] + adc_data[13] + adc_data[18]) >> 2;
-    avrg_c_2_1 = (adc_data[4] + adc_data[9] + adc_data[14] + adc_data[19]) >> 2;
+    avrg_v_1 = (adc_data[1] + adc_data[7]  + adc_data[13] + adc_data[19]) >> 2;
+    avrg_v_2 = (adc_data[2] + adc_data[8]  + adc_data[14] + adc_data[20]) >> 2;
+    avrg_v_3 = (adc_data[3] + adc_data[9]  + adc_data[15] + adc_data[21]) >> 2;
+    avrg_c_1 = (adc_data[4] + adc_data[10] + adc_data[16] + adc_data[22]) >> 2;
+    avrg_c_2 = (adc_data[5] + adc_data[11] + adc_data[17] + adc_data[23]) >> 2;
 /*    uint32_t avg_index;
     uint32_t ch_index;
     uint32_t tmp_average;

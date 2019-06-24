@@ -121,6 +121,7 @@ void MX_TIM1_Init(void)
 
   HAL_TIM_MspPostInit(&htim1);
   HAL_TIM_Base_Start_IT(&htim1);
+  //HAL_TIM_
   TIM1->CCR1 = 1; // turn on interraptors arrrrrgh
 }
 uint32_t get_time(){

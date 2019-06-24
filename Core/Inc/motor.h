@@ -12,6 +12,11 @@
 #include <usb.h>
 
 extern ADC_HandleTypeDef hadc1;
+extern uint16_t avrg_v_1;
+extern uint16_t avrg_v_2;
+extern uint16_t avrg_v_3;
+extern uint16_t avrg_c_1;
+extern uint16_t avrg_c_2;
 
 struct State{
 

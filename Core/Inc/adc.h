@@ -46,6 +46,7 @@
 /* Includes ------------------------------------------------------------------*/
 //#include "stm32f4xx_hal.h"
 #include "main.h"
+
 //#include "stm32f4xx_hal.h"
 
 /* USER CODE BEGIN Includes */
@@ -61,10 +62,11 @@
 extern void Error_Handler(void);
 
 extern volatile uint16_t ADC_data[4];
-extern volatile uint16_t adc_data[40];
+extern volatile uint32_t adc_data[48];
+//extern motor * motor_pointer;
 
 void MX_ADC1_Init(void);
-void MX_ADC2_Init(void);
+//void MX_ADC2_Init(void);
 void MX_DMA_Init(void);
 
 /* USER CODE BEGIN Prototypes */
