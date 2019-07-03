@@ -2,8 +2,9 @@
 // Created by diehigh on 17.09.18.
 //
 
-#ifndef MOTOR_H
-#define MOTOR_H
+//#ifndef MOTOR_H
+//#define MOTOR_H
+#pragma once
 #include "FreeRTOS.h"
 #include "task.h"
 //#include "stm32f4xx_hal.h"
@@ -11,12 +12,15 @@
 #include <string.h>
 #include <usb.h>
 
+#define DMA_VAR_BUF_SIZE 32
+#define DMA_BUFF_SIZE DMA_VAR_BUF_SIZE*5
+
 extern ADC_HandleTypeDef hadc1;
-extern uint16_t avrg_v_1;
-extern uint16_t avrg_v_2;
-extern uint16_t avrg_v_3;
-extern uint16_t avrg_c_1;
-extern uint16_t avrg_c_2;
+extern uint32_t avrg_v_1;
+extern uint32_t avrg_v_2;
+extern uint32_t avrg_v_3;
+extern uint32_t avrg_c_1;
+extern uint32_t avrg_c_2;
 
 struct State{
 
@@ -116,4 +120,4 @@ public:
 
 };
 void action();
-#endif MOTOR_H
+//#endif MOTOR_H

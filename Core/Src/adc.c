@@ -38,23 +38,31 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
+#include <stdlib.h>
 #include "adc.h"
 #include "gpio.h"
 
 
 
 DMA_HandleTypeDef hdma_adc1;
-//volatile uint16_t ADC_data[4]= {0,0,0,0}; // DMA-Buffer
-volatile uint32_t adc_data[48] = {0}; //struct with uint16_t units??
+
+volatile uint32_t adc_data[DMA_BUFF_SIZE] = {0}; //struct with uint16_t units??
 
 
 
 ADC_HandleTypeDef hadc1;
-uint16_t avrg_v_1 = 0;
-uint16_t avrg_v_2 = 0;
-uint16_t avrg_v_3 = 0;
-uint16_t avrg_c_1 = 0;
-uint16_t avrg_c_2 = 0;
+
+uint32_t avrg_v_1 = 0; //0
+uint32_t avrg_v_2 = 0; //1
+uint32_t avrg_v_3 = 0; //2
+uint32_t avrg_c_1 = 0; //3
+uint32_t avrg_c_2 = 0; //4
+
+uint32_t v_1_buff[32] = {0};
+uint32_t v_2_buff[32] = {0};
+uint32_t v_3_buff[32] = {0};
+uint32_t c_1_buff[32] = {0};
+uint32_t c_2_buff[32] = {0};
 
 
 /* ADC1 init function */
@@ -75,7 +83,7 @@ void MX_ADC1_Init(void)
   //hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_FALLING;
   hadc1.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T1_CC1;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc1.Init.NbrOfConversion = 6;
+  hadc1.Init.NbrOfConversion = 5;//6;
   hadc1.Init.DMAContinuousRequests = ENABLE;
   hadc1.Init.EOCSelection = ADC_EOC_SEQ_CONV;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
@@ -84,9 +92,9 @@ void MX_ADC1_Init(void)
   }
 
 
-  sConfig.Channel = ADC_CHANNEL_0;
+  sConfig.Channel = ADC_CHANNEL_0; //ADC_CHANNEL_0
   sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;//ADC_SAMPLETIME_480CYCLES
   if(HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
       Error_Handler();
@@ -105,20 +113,20 @@ void MX_ADC1_Init(void)
       Error_Handler();
   }
 
-  sConfig.Channel = ADC_CHANNEL_3;
+  /*sConfig.Channel = ADC_CHANNEL_3;
+  sConfig.Rank = 4;
+  if(HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+      Error_Handler();
+  }*/
+  sConfig.Channel = ADC_CHANNEL_8;
   sConfig.Rank = 4;
   if(HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
       Error_Handler();
   }
-  sConfig.Channel = ADC_CHANNEL_8;
-  sConfig.Rank = 5;
-  if(HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
-      Error_Handler();
-  }
   sConfig.Channel = ADC_CHANNEL_9;
-  sConfig.Rank = 6;
+  sConfig.Rank = 5;
   if(HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
       Error_Handler();
@@ -148,8 +156,6 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
-    //GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-    //GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
     HAL_DMA_Init(adcHandle->DMA_Handle);
 
@@ -164,7 +170,8 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
     hdma_adc1.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;//DMA_MDATAALIGN_HALFWORD;
     hdma_adc1.Init.Mode = DMA_CIRCULAR;
     hdma_adc1.Init.Priority = DMA_PRIORITY_VERY_HIGH;
-    hdma_adc1.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+    hdma_adc1.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+    hdma_adc1.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_1QUARTERFULL;
     if (HAL_DMA_Init(&hdma_adc1) != HAL_OK)
     {
         Error_Handler();
@@ -225,31 +232,18 @@ void MX_DMA_Init(void)
 //uint16_t*       puhADCxConvertedValue_Regular_Avg;       /* Pointer to the average of the 1st or 2nd half of ADC conversion results table of regular group, channel on rank1*/
 //uint8_t					ADC_new = 0;
 
+
+
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *AdcHandle)
 {
-    avrg_v_1 = (adc_data[25] + adc_data[31] + adc_data[37] + adc_data[43]) >> 2;
-    avrg_v_2 = (adc_data[26] + adc_data[32] + adc_data[38] + adc_data[44]) >> 2;
-    avrg_v_3 = (adc_data[27] + adc_data[33] + adc_data[39] + adc_data[45]) >> 2;
-    avrg_c_1 = (adc_data[28] + adc_data[34] + adc_data[40] + adc_data[46]) >> 2;
-    avrg_c_2 = (adc_data[29] + adc_data[35] + adc_data[41] + adc_data[47]) >> 2;
+    split_data();
+    get_filtered_values();
     int hh= 0;
-
-/*    uint32_t avg_index;
-    uint32_t ch_index;
-    uint32_t tmp_average;
-
-    for (ch_index = 0; ch_index < NUM_CHANNELS; ch_index++)
-    {
-        tmp_average = 0;
-        for (avg_index = 0; avg_index < SAMPLE_RATE; avg_index++)
-        {
-            tmp_average += aADCxConvertedValues[SAMPLE_RATE*NUM_CHANNELS + ch_index + avg_index*NUM_CHANNELS];
-        }
-        uhADCxConvertedValue_Regular_Avg_half2[ch_index] = (uint16_t)(tmp_average/SAMPLE_RATE);0
-    }
-    puhADCxConvertedValue_Regular_Avg = (uint16_t*)&uhADCxConvertedValue_Regular_Avg_half2;
-    ADC_new = 1;
-    */
+    //avrg_v_1 = ( adc_data[97] + adc_data[103]  + adc_data[109] + adc_data[115] + adc_data[121] + adc_data[127] + adc_data[133] + adc_data[139] + adc_data[145] + adc_data[151] + adc_data[157] + adc_data[163] + adc_data[169] + adc_data[175] + adc_data[181] + adc_data[187]) >> 4;
+    //avrg_v_2 = ( adc_data[98] + adc_data[104]  + adc_data[110] + adc_data[116] + adc_data[122] + adc_data[128] + adc_data[134] + adc_data[140] + adc_data[146] + adc_data[152] + adc_data[158] + adc_data[164] + adc_data[170] + adc_data[176] + adc_data[182] + adc_data[188]) >> 4;
+    //avrg_v_3 = ( adc_data[99] + adc_data[105]  + adc_data[111] + adc_data[117] + adc_data[123] + adc_data[129] + adc_data[135] + adc_data[141] + adc_data[147] + adc_data[153] + adc_data[159] + adc_data[165] + adc_data[171] + adc_data[177] + adc_data[183] + adc_data[189]) >> 4;
+    //avrg_c_1 = (adc_data[100] + adc_data[106]  + adc_data[112] + adc_data[118] + adc_data[124] + adc_data[130] + adc_data[136] + adc_data[142] + adc_data[148] + adc_data[154] + adc_data[160] + adc_data[166] + adc_data[172] + adc_data[178] + adc_data[184] + adc_data[190]) >> 4;
+    //avrg_c_2 = (adc_data[101] + adc_data[107]  + adc_data[113] + adc_data[119] + adc_data[125] + adc_data[131] + adc_data[137] + adc_data[143] + adc_data[149] + adc_data[155] + adc_data[161] + adc_data[167] + adc_data[173] + adc_data[179] + adc_data[185] + adc_data[191]) >> 4;
 }
 
 /**
@@ -259,25 +253,84 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *AdcHandle)
   */
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
 {
-    avrg_v_1 = (adc_data[1] + adc_data[7]  + adc_data[13] + adc_data[19]) >> 2;
-    avrg_v_2 = (adc_data[2] + adc_data[8]  + adc_data[14] + adc_data[20]) >> 2;
-    avrg_v_3 = (adc_data[3] + adc_data[9]  + adc_data[15] + adc_data[21]) >> 2;
-    avrg_c_1 = (adc_data[4] + adc_data[10] + adc_data[16] + adc_data[22]) >> 2;
-    avrg_c_2 = (adc_data[5] + adc_data[11] + adc_data[17] + adc_data[23]) >> 2;
-/*    uint32_t avg_index;
-    uint32_t ch_index;
-    uint32_t tmp_average;
 
-    for (ch_index = 0; ch_index < NUM_CHANNELS; ch_index++)
-    {
-        tmp_average = 0;
-        for (avg_index = 0; avg_index < SAMPLE_RATE; avg_index++)
-        {
-            tmp_average += aADCxConvertedValues[ch_index + avg_index*NUM_CHANNELS];
-        }
-        uhADCxConvertedValue_Regular_Avg_half1[ch_index] = (uint16_t)(tmp_average/SAMPLE_RATE);
-    }
-    puhADCxConvertedValue_Regular_Avg = (uint16_t*)&uhADCxConvertedValue_Regular_Avg_half1;
-    ADC_new = 1;
-    */
+    //avrg_v_1 = (adc_data[1] + adc_data[7]  + adc_data[13] + adc_data[19] + adc_data[25] + adc_data[31] + adc_data[37] + adc_data[43] + adc_data[49] + adc_data[55] + adc_data[61] + adc_data[67] + adc_data[73] + adc_data[79] + adc_data[85] + adc_data[91]) >> 4;
+    //avrg_v_2 = (adc_data[2] + adc_data[8]  + adc_data[14] + adc_data[20] + adc_data[26] + adc_data[32] + adc_data[38] + adc_data[44] + adc_data[50] + adc_data[56] + adc_data[62] + adc_data[68] + adc_data[74] + adc_data[80] + adc_data[86] + adc_data[92]) >> 4;
+    //avrg_v_3 = (adc_data[3] + adc_data[9]  + adc_data[15] + adc_data[21] + adc_data[27] + adc_data[33] + adc_data[39] + adc_data[45] + adc_data[51] + adc_data[57] + adc_data[63] + adc_data[69] + adc_data[75] + adc_data[81] + adc_data[87] + adc_data[93]) >> 4;
+    //avrg_c_1 = (adc_data[4] + adc_data[10] + adc_data[16] + adc_data[22] + adc_data[28] + adc_data[34] + adc_data[40] + adc_data[46] + adc_data[52] + adc_data[58] + adc_data[64] + adc_data[70] + adc_data[76] + adc_data[82] + adc_data[88] + adc_data[94]) >> 4;
+    //avrg_c_2 = (adc_data[5] + adc_data[11] + adc_data[17] + adc_data[23] + adc_data[29] + adc_data[35] + adc_data[41] + adc_data[47] + adc_data[53] + adc_data[59] + adc_data[65] + adc_data[71] + adc_data[77] + adc_data[83] + adc_data[89] + adc_data[95]) >> 4;
 }
+
+
+
+void split_data()
+{
+    for(int i=0; i<DMA_VAR_BUF_SIZE; i++)
+    {
+        v_1_buff[i] = adc_data[i*5];
+        v_2_buff[i] = adc_data[i*5+1];
+        v_3_buff[i] = adc_data[i*5+2];
+        c_1_buff[i] = adc_data[i*5+3];
+        c_2_buff[i] = adc_data[i*5+4];
+    }
+}
+int compare(const void * x1, const void * x2)   // функция сравнения элементов массива
+{
+    return ( *(int*)x1 - *(int*)x2 );              // если результат вычитания равен 0, то числа равны, < 0: x1 < x2; > 0: x1 > x2
+}
+void get_filtered_values(){
+
+    qsort(v_1_buff, DMA_VAR_BUF_SIZE, sizeof(uint32_t), compare);
+    avrg_v_1 = v_1_buff[16];
+    qsort(v_2_buff, DMA_VAR_BUF_SIZE, sizeof(uint32_t), compare);
+    avrg_v_2 = v_2_buff[16];
+    qsort(v_3_buff, DMA_VAR_BUF_SIZE, sizeof(uint32_t), compare);
+    avrg_v_3 = v_3_buff[16];
+    qsort(c_1_buff, DMA_VAR_BUF_SIZE, sizeof(uint32_t), compare);
+    avrg_c_1 = c_1_buff[16];
+    qsort(c_2_buff, DMA_VAR_BUF_SIZE, sizeof(uint32_t), compare);
+    avrg_c_2 = c_2_buff[16];
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

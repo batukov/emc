@@ -15,8 +15,9 @@
 
 
 #define pi 3.1415926535F
+//#define DMA_BUFF_SIZE 160
 extern volatile uint16_t ADC_data[4];
-extern volatile uint32_t adc_data[48];
+extern volatile uint32_t adc_data[DMA_BUFF_SIZE];
 
 extern uint32_t tim4_counter;
 extern TIM_HandleTypeDef htim1;
@@ -109,8 +110,9 @@ void motor::do_commutation(uint16_t halls_data) {
     // если верхний ключ 1, а нижний 1 - а такого не должно быть, все сломается, сгорит, взорвется, палево
 
         //if(halls_data == 7) {break;} // если все датчики холла 1 - значит что-то пошло не так, ничего не делаем
-        halls_data = 4; ///TMP
+        halls_data = 6; ///TMP
         this->set_state(halls_data); // устанавливаем состояние системы в соответствие с датчиками холла
+
 
         if (this->current_state.key_1_H) { // если верхний ключ 1
             LL_TIM_CC_EnableChannel(htim1.Instance, LL_TIM_CHANNEL_CH1); // включаем шим на верхнем
@@ -178,7 +180,7 @@ void motor::motor_task(void *pvParameters){
     {
         adc_data[i] = 0xFFFF;
     }
-    HAL_StatusTypeDef status = HAL_ADC_Start_DMA(&hadc1, (uint32_t *)&adc_data, 48); //(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
+    HAL_StatusTypeDef status = HAL_ADC_Start_DMA(&hadc1, (uint32_t *)&adc_data, 160); //(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
 
 
     //uint32_t  adc[2] = {0};
@@ -222,7 +224,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 int motor::process_last_msg() {
     char buffer_to_process[30] = {0}; // создаем буфер для сообщеня
     int value_to_process = 0; // создаем буфер для значеня в сообщени
-    int tmp_value = 0;
+    //int tmp_value = 0;
     if(!this->cmd_buffer->get_last_incoming_cmd(buffer_to_process, value_to_process)) // если есть какой-нить сообщеня
     {
         if(!strcmp("stop",buffer_to_process)){ // если сообщеня стоп и тд

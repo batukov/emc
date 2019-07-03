@@ -60,14 +60,19 @@
 /* USER CODE END Private defines */
 
 extern void Error_Handler(void);
-
+#define DMA_VAR_BUF_SIZE 32
+#define DMA_BUFF_SIZE DMA_VAR_BUF_SIZE*5
 extern volatile uint16_t ADC_data[4];
-extern volatile uint32_t adc_data[48];
+extern volatile uint32_t adc_data[DMA_BUFF_SIZE];
 //extern motor * motor_pointer;
 
 void MX_ADC1_Init(void);
 //void MX_ADC2_Init(void);
 void MX_DMA_Init(void);
+
+void split_data();
+int compare(const void * x1, const void * x2);
+void get_filtered_values();
 
 /* USER CODE BEGIN Prototypes */
 
